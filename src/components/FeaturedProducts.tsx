@@ -173,8 +173,12 @@ const FeaturedProducts = () => {
                     alt={product.name}
                     className="w-full h-80 object-cover"
                     onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                      e.currentTarget.nextElementSibling!.style.display = 'flex'
+                      const target = e.currentTarget as HTMLImageElement
+                      if (target && target.nextElementSibling) {
+                        target.style.display = 'none'
+                        const fallback = target.nextElementSibling as HTMLElement
+                        fallback.style.display = 'flex'
+                      }
                     }}
                   />
                 ) : null}

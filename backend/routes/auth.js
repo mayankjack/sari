@@ -27,7 +27,7 @@ router.post('/register', [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, email, password, firstName, lastName, phone, address } = req.body;
+    const { username, email, password, firstName, lastName, phone, address, city, state, zipCode } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
@@ -44,6 +44,9 @@ router.post('/register', [
       lastName,
       phone,
       address,
+      city,
+      state,
+      zipCode,
       role: 'customer'
     });
 
@@ -137,11 +140,117 @@ router.get('/me', auth, async (req, res) => {
         lastName: req.user.lastName,
         role: req.user.role,
         phone: req.user.phone,
-        address: req.user.address
+        address: req.user.address,
+        city: req.user.city,
+        state: req.user.state,
+        zipCode: req.user.zipCode
       }
     });
   } catch (error) {
     console.error('Get user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   PUT /api/auth/profile
+// @desc    Update user profile
+// @access  Private
+router.put('/profile', auth, [
+  body('firstName').optional().notEmpty().withMessage('First name cannot be empty'),
+  body('lastName').optional().notEmpty().withMessage('Last name cannot be empty'),
+  body('email').optional().isEmail().withMessage('Please provide a valid email'),
+  body('phone').optional().isMobilePhone().withMessage('Please provide a valid phone number'),
+  body('address').optional().isString().withMessage('Address must be a string'),
+  body('city').optional().isString().withMessage('City must be a string'),
+  body('state').optional().isString().withMessage('State must be a string'),
+  body('zipCode').optional().isString().withMessage('ZIP code must be a string')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { firstName, lastName, email, phone, address, city, state, zipCode } = req.body;
+    
+    // Check if email is being changed and if it's already taken
+    if (email && email !== req.user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email is already taken' });
+      }
+    }
+
+    // Update user profile
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        firstName: firstName || req.user.firstName,
+        lastName: lastName || req.user.lastName,
+        email: email || req.user.email,
+        phone: phone !== undefined ? phone : req.user.phone,
+        address: address !== undefined ? address : req.user.address,
+        city: city !== undefined ? city : req.user.city,
+        state: state !== undefined ? state : req.user.state,
+        zipCode: zipCode !== undefined ? zipCode : req.user.zipCode
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        id: updatedUser._id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        role: updatedUser.role,
+        phone: updatedUser.phone,
+        address: updatedUser.address,
+        city: updatedUser.city,
+        state: updatedUser.state,
+        zipCode: updatedUser.zipCode
+      }
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   PUT /api/auth/password
+// @desc    Update user password
+// @access  Private
+router.put('/password', auth, [
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+    
+    // Verify current password
+    const isMatch = await req.user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    // Update password
+    req.user.password = newPassword;
+    await req.user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Password update error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

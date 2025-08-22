@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { User, Mail, Phone, MapPin, Edit, Save, X, Lock, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -14,14 +14,14 @@ const ProfilePage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   
   const [profileData, setProfileData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    address: user?.address || '',
-    city: user?.city || '',
-    state: user?.state || '',
-    zipCode: user?.zipCode || ''
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: ''
   })
 
   const [passwordData, setPasswordData] = useState({
@@ -29,6 +29,22 @@ const ProfilePage = () => {
     newPassword: '',
     confirmPassword: ''
   })
+
+  // Initialize profile data when user changes
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        city: user.city || '',
+        state: user.state || '',
+        zipCode: user.zipCode || ''
+      })
+    }
+  }, [user])
 
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProfileData({
@@ -46,13 +62,12 @@ const ProfilePage = () => {
 
   const handleProfileSave = async () => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
       await updateProfile(profileData)
       toast.success('Profile updated successfully!')
       setIsEditing(false)
     } catch (error) {
       toast.error('Failed to update profile. Please try again.')
+      console.error('Profile update error:', error)
     }
   }
 

@@ -40,11 +40,20 @@ const userSchema = new mongoose.Schema({
     trim: true
   },
   address: {
-    street: String,
-    city: String,
-    state: String,
-    zipCode: String,
-    country: String
+    type: String,
+    trim: true
+  },
+  city: {
+    type: String,
+    trim: true
+  },
+  state: {
+    type: String,
+    trim: true
+  },
+  zipCode: {
+    type: String,
+    trim: true
   },
   isActive: {
     type: Boolean,

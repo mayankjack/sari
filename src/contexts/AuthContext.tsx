@@ -14,13 +14,10 @@ interface User {
   lastName: string
   role: 'admin' | 'customer'
   phone?: string
-  address?: {
-    street?: string
-    city?: string
-    state?: string
-    zipCode?: string
-    country?: string
-  }
+  address?: string
+  city?: string
+  state?: string
+  zipCode?: string
 }
 
 interface AuthContextType {
@@ -28,6 +25,7 @@ interface AuthContextType {
   token: string | null
   login: (email: string, password: string) => Promise<void>
   register: (userData: RegisterData) => Promise<void>
+  updateProfile: (profileData: Partial<User>) => Promise<void>
   logout: () => void
   loading: boolean
   isAdmin: boolean
@@ -40,13 +38,10 @@ interface RegisterData {
   firstName: string
   lastName: string
   phone?: string
-  address?: {
-    street?: string
-    city?: string
-    state?: string
-    zipCode?: string
-    country?: string
-  }
+  address?: string
+  city?: string
+  state?: string
+  zipCode?: string
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -127,6 +122,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }
 
+  const updateProfile = async (profileData: Partial<User>) => {
+    try {
+      const response = await axios.put('/api/auth/profile', profileData)
+      setUser(response.data.user)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof AxiosError && error.response?.data?.message 
+        ? error.response.data.message 
+        : 'Profile update failed'
+      throw new Error(errorMessage)
+    }
+  }
+
   const logout = () => {
     setToken(null)
     setUser(null)
@@ -141,6 +148,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     token,
     login,
     register,
+    updateProfile,
     logout,
     loading,
     isAdmin
