@@ -5,10 +5,23 @@ import HeroSection from '@/components/HeroSection'
 import FeaturedProducts from '@/components/FeaturedProducts'
 import CategoryGrid from '@/components/CategoryGrid'
 import Testimonials from '@/components/Testimonials'
+import DebugInfo from '@/components/DebugInfo'
+import ApiTest from '@/components/ApiTest'
+import SimpleCategoryTest from '@/components/SimpleCategoryTest'
+import QuickDebug from '@/components/QuickDebug'
 
 export default function HomePage() {
   return (
     <div className="min-h-screen">
+      {/* API Test Component (Development Only) */}
+      <ApiTest />
+      
+      {/* Simple API Test Component */}
+      <SimpleCategoryTest />
+      
+      {/* Quick Debug Component */}
+      <QuickDebug />
+
       {/* Hero Section */}
       <HeroSection />
 
@@ -95,6 +108,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Debug Info (Development Only) */}
+      <DebugInfo />
     </div>
   )
 }

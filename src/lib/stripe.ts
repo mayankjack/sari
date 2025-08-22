@@ -13,3 +13,4 @@ export const getStripe = (): Promise<Stripe | null> => {
 }
 
 export default getStripe
+

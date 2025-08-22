@@ -213,3 +213,4 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 }
 
 export default StripePaymentForm
+

@@ -61,7 +61,7 @@ const AdminDashboard = () => {
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Welcome to your admin dashboard. Here is an overview of your store.</p>
+        <p className="text-gray-600">Here is an overview of your store performance and recent activity.</p>
       </div>
 
       {/* Stats Grid */}
@@ -75,7 +75,7 @@ const AdminDashboard = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Revenue</p>
               <p className="text-2xl font-bold text-gray-900">
-                ${mockStats.totalRevenue.toLocaleString()}
+                ₹{mockStats.totalRevenue.toLocaleString()}
               </p>
             </div>
           </div>
@@ -215,7 +215,7 @@ const AdminDashboard = () => {
                     <p className="text-sm text-gray-500">{order.date}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-gray-900">${order.amount}</p>
+                    <p className="font-medium text-gray-900">₹{order.amount}</p>
                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                       order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                       order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :

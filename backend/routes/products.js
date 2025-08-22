@@ -18,13 +18,26 @@ router.get('/', async (req, res) => {
       minPrice, 
       maxPrice, 
       sortBy = 'createdAt',
-      sortOrder = 'desc'
+      sortOrder = 'desc',
+      admin = false, // New parameter for admin access
+      featured, // New parameter for featured products
+      active // New parameter for active products
     } = req.query;
 
-    const query = { isActive: true };
+    const query = admin === 'true' ? {} : { isActive: true }; // Show all products for admin
+
+    // Featured filter
+    if (featured === 'true') {
+      query.isFeatured = true;
+    }
+
+    // Active filter
+    if (active === 'true') {
+      query.isActive = true;
+    }
 
     // Category filter
-    if (category) {
+    if (category && category !== 'all') {
       query.category = category;
     }
 

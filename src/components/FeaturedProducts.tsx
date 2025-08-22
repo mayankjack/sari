@@ -1,59 +1,155 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Star, Heart, ShoppingCart } from 'lucide-react'
+import { Star, Heart, ShoppingCart, Package } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
+import { API_URLS } from '@/lib/config'
 
-// Mock data for featured products
-const featuredProducts = [
-  {
-    id: '1',
-    name: 'Silk Banarasi Sari',
-    price: 299.99,
-    originalPrice: 399.99,
-    image: '/api/placeholder/300/400',
-    rating: 4.8,
-    reviewCount: 124,
-    isNew: true,
-    isSale: true
-  },
-  {
-    id: '2',
-    name: 'Cotton Handloom Sari',
-    price: 149.99,
-    originalPrice: 199.99,
-    image: '/api/placeholder/300/400',
-    rating: 4.6,
-    reviewCount: 89,
-    isNew: false,
-    isSale: true
-  },
-  {
-    id: '3',
-    name: 'Designer Georgette Sari',
-    price: 399.99,
-    originalPrice: 499.99,
-    image: '/api/placeholder/300/400',
-    rating: 4.9,
-    reviewCount: 156,
-    isNew: true,
-    isSale: false
-  },
-  {
-    id: '4',
-    name: 'Traditional Kanjeevaram',
-    price: 599.99,
-    originalPrice: 699.99,
-    image: '/api/placeholder/300/400',
-    rating: 4.7,
-    reviewCount: 203,
-    isNew: false,
-    isSale: true
+interface Product {
+  _id: string
+  name: string
+  description: string
+  price: number
+  images: string[]
+  isFeatured: boolean
+  isActive: boolean
+  rating?: {
+    average: number
+    count: number
   }
-]
+}
 
 const FeaturedProducts = () => {
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        console.log('🔍 Fetching featured products...')
+        console.log('📍 API URL:', API_URLS.PRODUCTS({ 
+          limit: '8', 
+          featured: 'true',
+          active: 'true'
+        }))
+        
+        // Fetch featured and active products
+        const response = await fetch(API_URLS.PRODUCTS({ 
+          limit: '8', 
+          featured: 'true',
+          active: 'true'
+        }))
+        
+        console.log('📡 Response status:', response.status)
+        console.log('📡 Response ok:', response.ok)
+        
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('❌ Response error:', errorText)
+          throw new Error('Failed to fetch featured products')
+        }
+        
+        const data = await response.json()
+        console.log('📦 Products data:', data)
+        console.log('📦 Products count:', data.products?.length || 0)
+        
+        setProducts(data.products || [])
+      } catch (error) {
+        console.error('❌ Error fetching featured products:', error)
+        setError('Failed to load featured products')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFeaturedProducts()
+  }, [])
+
+  if (loading) {
+    return (
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Featured Products
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Discover our most popular and trending saris, carefully selected for their quality and style
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow-md p-4 animate-pulse">
+                <div className="w-full h-80 bg-gray-200 rounded-t-lg mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (error) {
+    return (
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Featured Products
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Discover our most popular and trending saris, carefully selected for their quality and style
+            </p>
+          </div>
+          
+          <div className="text-center py-12">
+            <Package className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to load products</h3>
+            <p className="text-gray-500 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (products.length === 0) {
+    return (
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Featured Products
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Discover our most popular and trending saris, carefully selected for their quality and style
+            </p>
+          </div>
+          
+          <div className="text-center py-12">
+            <Package className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No featured products yet</h3>
+            <p className="text-gray-500 mb-4">Check back soon for our latest collections!</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -67,11 +163,24 @@ const FeaturedProducts = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
-            <div key={product.id} className="group bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          {products.map((product) => (
+            <div key={product._id} className="group bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               {/* Product Image */}
               <div className="relative overflow-hidden rounded-t-lg">
-                <div className="w-full h-80 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
+                {product.images && product.images[0] ? (
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    className="w-full h-80 object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                      e.currentTarget.nextElementSibling!.style.display = 'flex'
+                    }}
+                  />
+                ) : null}
+                
+                {/* Fallback Image */}
+                <div className="w-full h-80 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center" style={{ display: product.images && product.images[0] ? 'none' : 'flex' }}>
                   <div className="text-center">
                     <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-white text-xl font-bold">S</span>
@@ -82,16 +191,9 @@ const FeaturedProducts = () => {
                 
                 {/* Badges */}
                 <div className="absolute top-3 left-3 flex flex-col gap-2">
-                  {product.isNew && (
-                    <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                      New
-                    </span>
-                  )}
-                  {product.isSale && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                      Sale
-                    </span>
-                  )}
+                  <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                    Featured
+                  </span>
                 </div>
 
                 {/* Wishlist Button */}
@@ -115,23 +217,25 @@ const FeaturedProducts = () => {
                 </h3>
                 
                 {/* Rating */}
-                <div className="flex items-center mb-3">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < Math.floor(product.rating)
-                            ? 'text-yellow-400 fill-current'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
+                {product.rating && (
+                  <div className="flex items-center mb-3">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < Math.floor(product.rating!.average)
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-600 ml-2">
+                      ({product.rating.count})
+                    </span>
                   </div>
-                  <span className="text-sm text-gray-600 ml-2">
-                    ({product.reviewCount})
-                  </span>
-                </div>
+                )}
 
                 {/* Price */}
                 <div className="flex items-center justify-between">
@@ -139,18 +243,7 @@ const FeaturedProducts = () => {
                     <span className="text-lg font-bold text-gray-900">
                       {formatPrice(product.price)}
                     </span>
-                    {product.originalPrice > product.price && (
-                      <span className="text-sm text-gray-500 line-through">
-                        {formatPrice(product.originalPrice)}
-                      </span>
-                    )}
                   </div>
-                  
-                  {product.originalPrice > product.price && (
-                    <span className="text-sm font-medium text-red-600">
-                      {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
